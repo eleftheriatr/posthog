@@ -101,6 +101,7 @@ from posthog.utils import (
     refresh_requested_by_client,
     relative_date_parse,
     str_to_bool,
+    filters_override_requested_by_client,
 )
 
 logger = structlog.get_logger(__name__)
@@ -572,6 +573,7 @@ class InsightSerializer(InsightBasicSerializer, UserPermissionsSerializerMixin):
             try:
                 refresh_requested = refresh_requested_by_client(self.context["request"])
                 execution_mode = execution_mode_from_refresh(refresh_requested)
+                filters_override = filters_override_requested_by_client(self.context["request"])
 
                 if self.context.get("is_shared", False):
                     execution_mode = shared_insights_execution_mode(execution_mode)
@@ -581,6 +583,7 @@ class InsightSerializer(InsightBasicSerializer, UserPermissionsSerializerMixin):
                     dashboard=dashboard,
                     execution_mode=execution_mode,
                     user=self.context["request"].user,
+                    filters_override=filters_override,
                 )
             except ExposedHogQLError as e:
                 raise ValidationError(str(e))
